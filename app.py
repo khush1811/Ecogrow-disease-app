@@ -26,42 +26,23 @@ from utils.disease import disease_dic
 
 import requests
 
-import os  # 🔥 move this to top
+import os  
 
 # define disease_classes FIRST
 disease_classes = [ ... ]
 
+import gdown
+
 MODEL_PATH = "models/plant_disease_model.pth"
 
-def download_file_from_google_drive(file_id, destination):
-    URL = "https://drive.google.com/uc?export=download"
-    session = requests.Session()
-
-    response = session.get(URL, params={'id': file_id}, stream=True)
-    
-    with open(destination, "wb") as f:
-        for chunk in response.iter_content(32768):
-            if chunk:
-                f.write(chunk)
-
-# download if not exists
 if not os.path.exists(MODEL_PATH):
-    os.makedirs("models", exist_ok=True)
     print("Downloading model...")
-    download_file_from_google_drive(
-        "1P7o34U5S0aptxyA50odgqqpjKvtx7Vc7",
-        MODEL_PATH
-    )
+    os.makedirs("models", exist_ok=True)
+    
+    url = "https://drive.google.com/uc?id=1P7o34U5S0aptxyA50odgqqpjKvtx7Vc7"
+    gdown.download(url, MODEL_PATH, quiet=False)
+    
     print("Download complete!")
-
-if not os.path.exists(MODEL_PATH):
-    raise Exception("Model not found after download")
-
-disease_model = ResNet9(3, len(disease_classes))
-disease_model.load_state_dict(
-    torch.load(MODEL_PATH, map_location=torch.device('cpu'))
-)
-disease_model.eval()
 
 # Loading crop recommendation model
 crop_recommendation_model_path = 'models/RandomForest.pkl'
@@ -115,8 +96,6 @@ disease_model = ResNet9(3, len(disease_classes))
 disease_model.load_state_dict(torch.load(
     disease_model_path, map_location=torch.device('cpu')))
 disease_model.eval()
-
-
 
 def weather_fetch(city_name):
     """
